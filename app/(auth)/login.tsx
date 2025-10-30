@@ -39,7 +39,7 @@ export default function LoginScreen() {
       {/* Header */}
       <View style={styles.header}>
         <Ionicons name="car-sport" size={64} color="#000" />
-        <ThemedText type="title" style={styles.title}>Carros Usados</ThemedText>
+        <ThemedText type="title" style={styles.title}>\DenzelCarShop</ThemedText>
         <ThemedText style={styles.subtitle}>Faça login para vender</ThemedText>
       </View>
 

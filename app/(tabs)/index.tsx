@@ -1,98 +1,259 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
+import { useEffect, useState } from 'react';
+import { ScrollView, TouchableOpacity, View } from 'react-native';
 import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { ThemedText } from '@/components/themed-text';
+import { Link, useRouter } from 'expo-router';
+import { useAuth } from '@/lib/auth';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import * as Haptics from 'expo-haptics';
 
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const { user, loadUser } = useAuth();
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
+  useEffect(() => {
+    loadUser().finally(() => setLoading(false));
+  }, []);
+
+  const handleSellCar = () => {
+    Haptics.selectionAsync();
+    router.push('/(tabs)/sell-car');
+  };
+
+  if (loading) {
+    return (
+      <ThemedView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ThemedText>Carregando...</ThemedText>
       </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
+    );
+  }
+
+  return (
+    <ScrollView style={{ flex: 1, backgroundColor: '#f8f9fa' }}>
+      <ThemedView style={styles.container}>
+
+        {/* HERO SECTION */}
+        <LinearGradient
+          colors={['#4facfe', '#00f2fe']}
+          style={styles.hero}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+        >
+          <ThemedView style={styles.heroContent}>
+            <ThemedText style={styles.greeting}>
+              {user ? `Olá, ${user.name.split(' ')[0]}!` : 'Bem-vindo ao'}
+            </ThemedText>
+            <ThemedText style={styles.title}>Carros Usados</ThemedText>
+            <ThemedText style={styles.subtitle}>
+              {user
+                ? 'Encontre ou venda seu carro com segurança'
+                : 'Compre e venda com confiança e facilidade'}
+            </ThemedText>
+          </ThemedView>
+
+          <View style={styles.carIcon}>
+            <Ionicons name="car-sport" size={120} color="#fff" />
+          </View>
+        </LinearGradient>
+
+        {/* CTA SECTION */}
+        <ThemedView style={styles.ctaSection}>
+          {user ? (
+            <TouchableOpacity style={styles.primaryButton} onPress={handleSellCar}>
+              <Ionicons name="add-circle" size={24} color="#fff" />
+              <ThemedText style={styles.buttonText}>Vender Meu Carro</ThemedText>
+            </TouchableOpacity>
+          ) : (
+            <ThemedView style={styles.authButtons}>
+              <Link href="/(auth)/login" asChild>
+                <TouchableOpacity style={styles.primaryButton}>
+                  <Ionicons name="log-in" size={24} color="#fff" />
+                  <ThemedText style={styles.buttonText}>Fazer Login</ThemedText>
+                </TouchableOpacity>
+              </Link>
+
+              <Link href="/(auth)/register" asChild>
+                <TouchableOpacity style={styles.secondaryButton}>
+                  <Ionicons name="person-add" size={24} color="#000" />
+                  <ThemedText style={styles.secondaryText}>Criar Conta</ThemedText>
+                </TouchableOpacity>
+              </Link>
+            </ThemedView>
+          )}
+        </ThemedView>
+
+        {/* FEATURES */}
+        <ThemedView style={styles.features}>
+          <ThemedView style={styles.featureCard}>
+            <View style={styles.iconCircle}>
+              <Ionicons name="shield-checkmark" size={32} color="#4facfe" />
+            </View>
+            <ThemedText style={styles.featureTitle}>Segurança</ThemedText>
+            <ThemedText style={styles.featureDesc}>
+              Anúncios verificados e contato direto
+            </ThemedText>
+          </ThemedView>
+
+          <ThemedView style={styles.featureCard}>
+            <View style={styles.iconCircle}>
+              <Ionicons name="search" size={32} color="#00f2fe" />
+            </View>
+            <ThemedText style={styles.featureTitle}>Busca Rápida</ThemedText>
+            <ThemedText style={styles.featureDesc}>
+              Filtros por preço, ano e marca
+            </ThemedText>
+          </ThemedView>
+
+          <ThemedView style={styles.featureCard}>
+            <View style={styles.iconCircle}>
+              <Ionicons name="chatbubble" size={32} color="#7c3aed" />
+            </View>
+            <ThemedText style={styles.featureTitle}>Contato Direto</ThemedText>
+            <ThemedText style={styles.featureDesc}>
+              Fale direto com o vendedor
+            </ThemedText>
+          </ThemedView>
+        </ThemedView>
+
+        {/* FOOTER */}
+        <ThemedView style={styles.footer}>
+          <ThemedText style={styles.footerText}>
+            Milhares de carros à sua espera
+          </ThemedText>
+        </ThemedView>
       </ThemedView>
-    </ParallaxScrollView>
+    </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  titleContainer: {
+const styles = {
+  container: {
+    paddingBottom: 40,
+  },
+  hero: {
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
+    overflow: 'hidden',
+    position: 'relative' as const,
+  },
+  heroContent: {
+    padding: 24,
+    paddingTop: 60,
+    zIndex: 2,
+  },
+  greeting: {
+    fontSize: 20,
+    color: '#fff',
+    fontWeight: '500',
+  },
+  title: {
+    fontSize: 36,
+    fontWeight: '800',
+    color: '#fff',
+    marginTop: 4,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#fff',
+    opacity: 0.9,
+    marginTop: 8,
+  },
+  carIcon: {
+    position: 'absolute' as const,
+    right: 16,
+    bottom: -20,
+    opacity: 0.2,
+  },
+  ctaSection: {
+    padding: 24,
+    paddingTop: 32,
+  },
+  primaryButton: {
+    backgroundColor: '#000',
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    justifyContent: 'center',
+    padding: 18,
+    borderRadius: 16,
+    gap: 12,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  secondaryButton: {
+    backgroundColor: '#fff',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 18,
+    borderRadius: 16,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    marginTop: 12,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  authButtons: {
+    gap: 0,
   },
-});
+  buttonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  secondaryText: {
+    color: '#000',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+  features: {
+    paddingHorizontal: 24,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: 16,
+  },
+  featureCard: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 20,
+    width: '48%',
+    alignItems: 'center',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+  },
+  iconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#f0f8ff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  featureTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  featureDesc: {
+    fontSize: 13,
+    color: '#666',
+    textAlign: 'center',
+  },
+  footer: {
+    alignItems: 'center',
+    padding: 32,
+  },
+  footerText: {
+    fontSize: 16,
+    color: '#666',
+    fontStyle: 'italic',
+  },
+};
